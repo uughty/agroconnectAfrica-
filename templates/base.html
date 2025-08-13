@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AGROCONNECTAFRICA{% endblock %}</title>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <style>
+        @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap)');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
+    <header class="bg-green-700 text-white shadow-md">
+        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="{% url 'home' %}" class="text-3xl font-bold">
+                AGROCONNECTAFRICA
+            </a>
+            <div class="space-x-4">
+                <a href="{% url 'home' %}" class="hover:text-green-200 transition-colors duration-300">Home</a>
+                <a href="{% url 'product_list' %}" class="hover:text-green-200 transition-colors duration-300">Products</a>
+                <a href="/orders/" class="hover:text-green-200 transition-colors duration-300">Orders</a>
+                <a href="/reviews/" class="hover:text-green-200 transition-colors duration-300">Reviews</a>
+                <a href="/users/login/" class="bg-white text-green-700 px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition-colors duration-300">Login</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-gray-800 text-white p-6 mt-8">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2023 AGROCONNECTAFRICA. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

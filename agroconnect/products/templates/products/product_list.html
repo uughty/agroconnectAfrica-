@@ -1,0 +1,45 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGROCONNECTAFRICA - Products</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-10">
+            <h1 class="text-5xl font-bold text-green-700">AGROCONNECTAFRICA</h1>
+            <p class="mt-2 text-xl text-gray-600">Connecting you with quality agricultural products</p>
+        </header>
+
+        <main class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% if products %}
+                {% for product in products %}
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105">
+                        <img src="{{ product.image|default:'https://placehold.co/600x400/E5E7EB/4B5563?text=Product+Image' }}" alt="{{ product.name }}" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h2 class="text-2xl font-bold text-green-800 mb-2">{{ product.name }}</h2>
+                            <p class="text-gray-600 mb-4">{{ product.description }}</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-3xl font-bold text-green-600">${{ product.price }}</span>
+                                <button class="bg-green-600 text-white px-4 py-2 rounded-full font-semibold hover:bg-green-700 transition-colors duration-300">
+                                    Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-center text-gray-500 text-xl md:col-span-2 lg:col-span-3">No products found. Please add some via the admin panel.</p>
+            {% endif %}
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,109 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+     <style>
+        body {
+            font-family: Arial, sans-serif;
+           background-image: url("{% static 'images/farmland.jpg' %}");
+
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 8px;
+            width: 350px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 4px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .password-field {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 35%;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Create Account</h2>
+        <form method="POST">
+            {% csrf_token %}
+
+            <label for="id_first_name">Full Name</label>
+            <input type="text" id="id_first_name" name="first_name" placeholder="John Doe" required>
+
+            <label for="id_email">Email</label>
+            <input type="email" id="id_email" name="email" placeholder="you@example.com" required>
+
+            <label for="id_password1">Password</label>
+            <div class="password-field">
+                <input type="password" id="id_password1" name="password1" placeholder="Enter password" required>
+                <span class="toggle-password" onclick="togglePassword('id_password1')">👁</span>
+            </div>
+
+            <label for="id_password2">Confirm Password</label>
+            <div class="password-field">
+                <input type="password" id="id_password2" name="password2" placeholder="Confirm password" required>
+                <span class="toggle-password" onclick="togglePassword('id_password2')">👁</span>
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+    </div>
+
+    <script>
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            field.type = field.type === "password" ? "text" : "password";
+        }
+    </script>
+</body>
+</html>

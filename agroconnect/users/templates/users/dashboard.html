@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+        h2, h3 { color: #333; }
+        ul { list-style: none; padding: 0; }
+        li { background: #fff; margin: 8px 0; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Dashboard</h2>
+
+    <h3>Escrow Balance: {{ escrow_balance }}</h3>
+
+    <h3>Products Sold</h3>
+    <ul>
+        {% for product in products_sold %}
+            <li>{{ product.name }} - ${{ product.price }}</li>
+        {% empty %}
+            <li>No products sold yet.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Pending Deliveries</h3>
+    <ul>
+        {% for order in pending_deliveries %}
+            <li>{{ order.product.name }} - Buyer: {{ order.buyer.username }} - Location: {{ order.buyer_location }}</li>
+        {% empty %}
+            <li>No pending deliveries.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Delivered Orders & Reviews</h3>
+    <ul>
+        {% for order in delivered_orders %}
+            <li>{{ order.product.name }} - Review: {{ order.review }}</li>
+        {% empty %}
+            <li>No delivered orders yet.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Payments</h3>
+    <ul>
+        {% for payment in payments %}
+            <li>{{ payment.order.product.name }} - ${{ payment.amount }} {% if payment.is_escrow %}(In Escrow){% endif %}</li>
+        {% empty %}
+            <li>No payments recorded.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
