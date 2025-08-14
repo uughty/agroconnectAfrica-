@@ -8,8 +8,9 @@ from django.urls import reverse
 from django.db import transaction
 from .tokens import make_email_token, read_email_token
 from django.shortcuts import render
+from django.db import IntegrityError
 
-User = get_user_model()
+
 
 def users_root(request):
     # If logged in, go to dashboard. Else, open the combined login/register page.
@@ -127,6 +128,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 
 def register_view(request):
+    User = get_user_model()
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -138,9 +140,36 @@ def register_view(request):
 
     context = {'form': form}  # ✅ define context here
 
-
 def register_view(request):
-    return render(request, 'users/register.html')
+    
+    if request.method == "POST":
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "").strip()
+        username = request.POST.get("username", "").strip()
+
+        # Fallback: if username is empty, use email before the @
+        if not username:
+            username = email.split("@")[0]
+
+        # Make sure username is unique
+        original_username = username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{original_username}_{counter}"
+            counter += 1
+
+        try:
+            user = User.objects.create_user(username=username, email=email, password=password)
+            messages.success(request, "Account created successfully! Please log in.")
+            return redirect("login")  # change 'login' to your login URL name
+        except IntegrityError:
+            messages.error(request, "This email is already registered.")
+        except Exception as e:
+            messages.error(request, f"An unexpected error occurred: {str(e)}")
+
+    return render(request, "register.html")
+
+
 # users/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
@@ -196,3 +225,21 @@ def register_view(request):
         form = CustomUserCreationForm()
 
     return render(request, 'register.html', {'form': form})
+def login_view(request):
+    if request.method == 'POST':
+        email = request.POST.get('username')  # This is actually the email field in your form
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect('dashboard')  # 'dashboard' should be the name of your URL pattern
+        else:
+            messages.error(request, 'Invalid email or password')
+
+    return render(request, 'login.html')
+
+@login_required
+def dashboard_view(request):
+    return render(request, "dashboard.html")
