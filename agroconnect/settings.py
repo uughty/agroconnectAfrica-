@@ -29,7 +29,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-     'django.contrib.auth.backends.ModelBackend',
     'agroconnect.products',
     'agroconnect.orders',
     'agroconnect.payments',
@@ -40,7 +39,6 @@ INSTALLED_APPS = [
 'allauth.socialaccount',
 'allauth.socialaccount.providers.google',
 'allauth.socialaccount.providers.linkedin_oauth2',
- 'users.backends.EmailBackend',
 ]
 
 MIDDLEWARE = [
@@ -137,9 +135,8 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-LOGIN_REDIRECT_URL = 'dashboard'
+LOGIN_REDIRECT_URL = "dashboard"
 
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # forces email verify before login
 ACCOUNT_EMAIL_REQUIRED = True
-LOGIN_URL = 'login'
-
+LOGOUT_REDIRECT_URL = "login"

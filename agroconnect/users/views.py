@@ -9,6 +9,8 @@ from django.db import transaction
 from .tokens import make_email_token, read_email_token
 from django.shortcuts import render
 from django.db import IntegrityError
+from django.contrib.auth import get_user_model
+from .forms import CustomUserCreationForm
 
 
 
@@ -147,7 +149,7 @@ def register_view(request):
         password = request.POST.get("password", "").strip()
         username = request.POST.get("username", "").strip()
 
-        # Fallback: if username is empty, use email before the @
+       
         if not username:
             username = email.split("@")[0]
 
@@ -161,7 +163,7 @@ def register_view(request):
         try:
             user = User.objects.create_user(username=username, email=email, password=password)
             messages.success(request, "Account created successfully! Please log in.")
-            return redirect("login")  # change 'login' to your login URL name
+            return redirect("login")  
         except IntegrityError:
             messages.error(request, "This email is already registered.")
         except Exception as e:
@@ -208,8 +210,7 @@ def register_view(request):
             return redirect('home')  # redirect to home page after register
     else:
         form = RegisterForm()
-    return render(request, "users/register.html", {"form": form})
-
+    return render(request, "register.html", {"form": form})
 from .forms import CustomUserCreationForm
 
 def register_view(request):
@@ -242,4 +243,4 @@ def login_view(request):
 
 @login_required
 def dashboard_view(request):
-    return render(request, "dashboard.html")
+       return render(request, "users/dashboard.html")

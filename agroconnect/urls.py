@@ -10,7 +10,7 @@ urlpatterns = [
     path('api/reviews/', include('agroconnect.reviews.urls')),
     path('api/payments/', include('agroconnect.payments.urls')),
     path('', home, name='home'),  # Homepage route
-     path('accounts/', include('allauth.urls')),
+        path("accounts/", include("django.contrib.auth.urls")),
  
 
 
