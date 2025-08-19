@@ -1,45 +1,94 @@
-!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AGROCONNECTAFRICA - Products</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
-</head>
-<body class="bg-gray-100 text-gray-800">
-    <div class="container mx-auto px-4 py-8">
-        <header class="text-center mb-10">
-            <h1 class="text-5xl font-bold text-green-700">AGROCONNECTAFRICA</h1>
-            <p class="mt-2 text-xl text-gray-600">Connecting you with quality agricultural products</p>
-        </header>
+{% extends "products/base_products.html" %}
+{% load static %}
 
-        <main class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% if products %}
-                {% for product in products %}
-                    <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105">
-                        <img src="{{ product.image|default:'https://placehold.co/600x400/E5E7EB/4B5563?text=Product+Image' }}" alt="{{ product.name }}" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h2 class="text-2xl font-bold text-green-800 mb-2">{{ product.name }}</h2>
-                            <p class="text-gray-600 mb-4">{{ product.description }}</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-3xl font-bold text-green-600">${{ product.price }}</span>
-                                <button class="bg-green-600 text-white px-4 py-2 rounded-full font-semibold hover:bg-green-700 transition-colors duration-300">
-                                    Add to Cart
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p class="text-center text-gray-500 text-xl md:col-span-2 lg:col-span-3">No products found. Please add some via the admin panel.</p>
-            {% endif %}
-        </main>
-    </div>
-</body>
-</html>
+{% block title %}Browse Products — AgroConnectAfrica{% endblock %}
+
+{% block content %}
+<header class="text-center mb-8">
+  <h1 class="text-4xl font-bold text-green-700">Browse Products</h1>
+  <p class="mt-2 text-lg text-gray-600">Find fresh and quality agricultural products</p>
+</header>
+
+<form method="get" action="">
+    <input type="text" id="search-input" placeholder="Search products..." autocomplete="off">
+    <div id="search-results" class="dropdown"></div>
+</form>
+
+<style>
+.dropdown {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 200px;
+    display: none;
+}
+.dropdown div {
+    padding: 8px;
+    cursor: pointer;
+}
+.dropdown div:hover {
+    background: #f0f0f0;
+}
+</style>
+
+
+{% if products %}
+  <section class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for product in products %}
+      <a href="{% url 'product_detail' product.id %}" class="block bg-white rounded-lg shadow hover:shadow-lg overflow-hidden">
+        <img
+          src="{% if product.image %}{{ product.image.url }}{% elif product.category == 'Livestock' %}{% static 'products/images/livestock.jpg' %}
+               {% elif product.category == 'Crops' %}{% static 'products/images/crops.jpg' %}
+               {% elif product.category == 'Fruits' %}{% static 'products/images/fruits.jpg' %}
+               {% elif product.category == 'Vegetables' %}{% static 'products/images/vegetables.jpg' %}
+               {% elif product.category == 'Grains' %}{% static 'products/images/grains.jpg' %}
+               {% else %}{% static 'products/images/default.jpg' %}{% endif %}"
+          alt="{{ product.name }}" class="w-full h-48 object-cover">
+        <div class="p-5">
+          <h2 class="text-xl font-semibold text-green-800">{{ product.name }}</h2>
+          <p class="text-gray-600 line-clamp-2">{{ product.description }}</p>
+          <div class="mt-3 text-2xl font-bold text-green-600">${{ product.price }}</div>
+        </div>
+      </a>
+    {% endfor %}
+  </section>
+{% else %}
+  <p class="text-center text-gray-500 text-xl">No products found.</p>
+{% endif %}
+{% endblock %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.getElementById("search-input");
+    const resultsDiv = document.getElementById("search-results");
+
+    searchInput.addEventListener("keyup", function() {
+        let query = this.value;
+        if (query.length < 2) {
+            resultsDiv.style.display = "none";
+            return;
+        }
+        fetch(`/products/search/?q=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                resultsDiv.innerHTML = "";
+                if (data.results.length > 0) {
+                    data.results.forEach(product => {
+                        let item = document.createElement("div");
+                        item.textContent = `${product.name} - $${product.price}`;
+                        item.addEventListener("click", function() {
+                            searchInput.value = product.name;
+                            resultsDiv.style.display = "none";
+                        });
+                        resultsDiv.appendChild(item);
+                    });
+                    resultsDiv.style.display = "block";
+                } else {
+                    resultsDiv.style.display = "none";
+                }
+            });
+    });
+});
+</script>

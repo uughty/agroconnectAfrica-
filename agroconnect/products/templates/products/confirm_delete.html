@@ -1,0 +1,16 @@
+{% extends "products/base_products.html" %}
+
+{% block title %}Delete {{ product.name }} — AgroConnectAfrica{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded shadow p-6">
+  <h1 class="text-2xl font-bold text-red-600 mb-3">Delete Product</h1>
+  <p>Are you sure you want to delete <strong>{{ product.name }}</strong>?</p>
+
+  <form method="post" class="mt-6 flex gap-3">
+    {% csrf_token %}
+    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Delete</button>
+    <a href="{% url 'my_products' %}" class="px-4 py-2 border rounded">Cancel</a>
+  </form>
+</div>
+{% endblock %}

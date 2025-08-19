@@ -12,14 +12,15 @@ from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from .forms import CustomUserCreationForm
 
-
+def home(request):
+    return render(request, "home.html") 
 
 def users_root(request):
     # If logged in, go to dashboard. Else, open the combined login/register page.
     if request.user.is_authenticated:
         return redirect("dashboard")
     return render(request, "users/login.html")
-
+    
 def _get_username_from_email(email: str) -> str:
     # A simple helper in case you want to autogenerate usernames (not used now).
     return email.split("@")[0]
@@ -227,20 +228,31 @@ def register_view(request):
 
     return render(request, 'register.html', {'form': form})
 def login_view(request):
-    if request.method == 'POST':
-        email = request.POST.get('username')  # This is actually the email field in your form
-        password = request.POST.get('password')
+    # 👇 Prevent logged-in users from seeing login page again
+    if request.user.is_authenticated:
+        return redirect('dashboard')  
+
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
 
         user = authenticate(request, username=email, password=password)
-
         if user is not None:
             login(request, user)
-            return redirect('dashboard')  # 'dashboard' should be the name of your URL pattern
+            return redirect('dashboard')  # 👈 send them to dashboard
         else:
-            messages.error(request, 'Invalid email or password')
+            messages.error(request, "Invalid email or password")
+    return render(request, "users/login.html")
 
-    return render(request, 'login.html')
 
-@login_required
+
+@login_required(login_url='login')
 def dashboard_view(request):
        return render(request, "users/dashboard.html")
+
+
+def logout_view(request):
+    if request.user.is_authenticated:
+        logout(request)
+        return redirect("home")
+    return redirect("dashboard") 

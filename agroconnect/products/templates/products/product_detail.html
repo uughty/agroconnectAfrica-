@@ -1,0 +1,37 @@
+{% extends "products/base_products.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} — AgroConnectAfrica{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6 grid md:grid-cols-2 gap-6">
+  <div>
+    <img
+      src="{% if product.image %}{{ product.image.url }}{% elif product.category == 'Livestock' %}{% static 'products/images/livestock.jpg' %}
+           {% elif product.category == 'Crops' %}{% static 'products/images/crops.jpg' %}
+           {% elif product.category == 'Fruits' %}{% static 'products/images/fruits.jpg' %}
+           {% elif product.category == 'Vegetables' %}{% static 'products/images/vegetables.jpg' %}
+           {% elif product.category == 'Grains' %}{% static 'products/images/grains.jpg' %}
+           {% else %}{% static 'products/images/default.jpg' %}{% endif %}"
+      alt="{{ product.name }}" class="w-full h-80 object-cover rounded">
+  </div>
+  <div>
+    <h1 class="text-3xl font-bold text-green-800">{{ product.name }}</h1>
+    <div class="text-gray-500 mb-2">{{ product.category }}</div>
+    <div class="text-3xl font-bold text-green-600 mb-4">${{ product.price }}</div>
+    <p class="text-gray-700">{{ product.description }}</p>
+
+    <div class="mt-6 flex gap-3">
+      <form method="post" action="{% url 'add_to_cart' product.id %}">
+        {% csrf_token %}
+        <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" type="submit">Add to Cart</button>
+      </form>
+
+      {% if user.is_authenticated and user == product.farmer %}
+        <a href="{% url 'edit_product' product.id %}" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Edit</a>
+        <a href="{% url 'delete_product' product.id %}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Delete</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -5,51 +5,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-        h2, h3 { color: #333; }
-        ul { list-style: none; padding: 0; }
-        li { background: #fff; margin: 8px 0; padding: 10px; border-radius: 5px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+            color: #1f2937;
+        }
+
+        header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        header h2 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-size: 20px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            color: #2563eb;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background: #f9fafb;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+
+        li:hover {
+            background: #eff6ff;
+        }
+
+        .balance {
+            font-size: 22px;
+            font-weight: bold;
+            color: #059669;
+        }
     </style>
 </head>
 <body>
-    <h2>Dashboard</h2>
 
-    <h3>Escrow Balance: {{ escrow_balance }}</h3>
+    <form action="{% url 'logout' %}" method="post" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" 
+            style="background:#ef4444; color:white; padding:8px 12px; border-radius:5px; border:none; cursor:pointer;">
+        Logout
+    </button>
+</form>
 
-    <h3>Products Sold</h3>
-    <ul>
-        {% for product in products_sold %}
-            <li>{{ product.name }} - ${{ product.price }}</li>
-        {% empty %}
-            <li>No products sold yet.</li>
-        {% endfor %}
-    </ul>
+    <header>
+        <h2>Dashboard</h2>
+    </header>
 
-    <h3>Pending Deliveries</h3>
-    <ul>
-        {% for order in pending_deliveries %}
-            <li>{{ order.product.name }} - Buyer: {{ order.buyer.username }} - Location: {{ order.buyer_location }}</li>
-        {% empty %}
-            <li>No pending deliveries.</li>
-        {% endfor %}
-    </ul>
+    <div class="container">
+        <div class="card">
+            <h3>Escrow Balance</h3>
+            <p class="balance">${{ escrow_balance }}</p>
+        </div>
 
-    <h3>Delivered Orders & Reviews</h3>
-    <ul>
-        {% for order in delivered_orders %}
-            <li>{{ order.product.name }} - Review: {{ order.review }}</li>
-        {% empty %}
-            <li>No delivered orders yet.</li>
-        {% endfor %}
-    </ul>
+        <div class="card">
+            <h3>Products Sold</h3>
+            <ul>
+                {% for product in products_sold %}
+                    <li>{{ product.name }} - ${{ product.price }}</li>
+                {% empty %}
+                    <li>No products sold yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
 
-    <h3>Payments</h3>
-    <ul>
-        {% for payment in payments %}
-            <li>{{ payment.order.product.name }} - ${{ payment.amount }} {% if payment.is_escrow %}(In Escrow){% endif %}</li>
-        {% empty %}
-            <li>No payments recorded.</li>
-        {% endfor %}
-    </ul>
+        <div class="card">
+            <h3>Pending Deliveries</h3>
+            <ul>
+                {% for order in pending_deliveries %}
+                    <li>{{ order.product.name }} - Buyer: {{ order.buyer.username }} - Location: {{ order.buyer_location }}</li>
+                {% empty %}
+                    <li>No pending deliveries.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Delivered Orders & Reviews</h3>
+            <ul>
+                {% for order in delivered_orders %}
+                    <li>{{ order.product.name }} - Review: {{ order.review }}</li>
+                {% empty %}
+                    <li>No delivered orders yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Payments</h3>
+            <ul>
+                {% for payment in payments %}
+                    <li>{{ payment.order.product.name }} - ${{ payment.amount }} {% if payment.is_escrow %}(In Escrow){% endif %}</li>
+                {% empty %}
+                    <li>No payments recorded.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </body>
 </html>

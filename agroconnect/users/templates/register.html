@@ -74,14 +74,24 @@
 <body>
     <div class="form-container">
         <h2>Create Account</h2>
-      <form method="POST">
+<form method="POST">
     {% csrf_token %}
     <input type="text" name="first_name" placeholder="Full Name" required>
     <input type="email" name="email" placeholder="Email" required>
     <input type="password" name="password1" placeholder="Password" required>
     <input type="password" name="password2" placeholder="Confirm Password" required>
+
+    <!-- New Role Selection -->
+    <label for="role">Register As:</label>
+    <select name="role" required>
+        <option value="">-- Select Role --</option>
+        <option value="farmer">Farmer</option>
+        <option value="buyer">Buyer</option>
+    </select>
+
     <button type="submit">Register</button>
 </form>
+
 
 {% for message in messages %}
     <p style="color:red;">{{ message }}</p>

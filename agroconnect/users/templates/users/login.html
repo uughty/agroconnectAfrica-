@@ -128,13 +128,18 @@
 <body>
     <div class="form-container">
         <h2>Login</h2>
+        
+        {% if form.errors %}
+            <p class="message">Invalid username or password. Please try again.</p>
+        {% endif %}
+
         {% for message in messages %}
             <p class="message">{{ message }}</p>
         {% endfor %}
-        <form method="POST" action="{% url 'login' %}">
 
-            {% csrf_token %}
-            
+        <!-- ✅ CHANGED: point to your custom view -->
+       <form method="POST" action="{% url 'login' %}">
+          {% csrf_token %}
             <label for="username">Username</label>
             <input type="text" id="username" name="username" placeholder="Enter your username" required>
 
@@ -146,6 +151,7 @@
 
             <button type="submit">Login</button>
         </form>
+
         <p class="register">Don't have an account? <a href="{% url 'register' %}">Register</a></p>
     </div>
 
