@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}AgroConnectAfrica{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="bg-green-700 text-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="{% url 'products:product_list' %}" class="text-2xl font-bold">AgroConnectAfrica</a>
+      <div class="flex items-center space-x-4">
+        <a href="{% url 'products:product_list' %}" class="hover:text-gray-100">Products</a>
+
+        {% if user.is_authenticated and user.is_farmer %}
+          <a href="{% url 'products:my_products' %}" class="hover:text-gray-100">My Products</a>
+          <a href="{% url 'products:add_product' %}" class="bg-green-500 px-3 py-1 rounded hover:bg-green-600">+ Add Product</a>
+        {% endif %}
+
+        <a href="{% url 'products:cart' %}" class="hover:text-gray-100">Cart</a>
+
+        {% if user.is_authenticated %}
+          <a href="{% url 'dashboard' %}" class="hover:text-gray-100">Dashboard</a>
+          <form method="post" action="{% url 'logout' %}" class="inline">
+            {% csrf_token %}
+            <button class="bg-red-500 px-3 py-1 rounded hover:bg-red-600" type="submit">Logout</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="hover:text-gray-100">Login</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- Messages -->
+  <div class="container mx-auto px-6 py-4">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="mb-3 p-3 rounded {{ message.tags|default:'bg-gray-200' }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <!-- Filters -->
+  <div class="container mx-auto px-6 flex justify-between items-center">
+    <form method="get" action="" class="flex space-x-2">
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search products..." class="border rounded px-3 py-2 w-64">
+      <select name="category" class="border rounded px-3 py-2">
+        <option value="">All Categories</option>
+        {% for key, label in categories.items %}
+          <option value="{{ key }}" {% if active_category == key %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Filter</button>
+    </form>
+  </div>
+
+  <!-- Product Grid -->
+  <main class="flex-grow container mx-auto px-6 py-6">
+    {% block content %}
+      {% if products %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {% for product in products %}
+            <div class="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition product-card">
+              <img src="{% if product.image %}{{ product.image.url }}{% else %}{% static 'img/placeholder.png' %}{% endif %}" alt="{{ product.name }}" class="w-full h-48 object-cover">
+              <div class="p-4">
+                <h3 class="text-lg font-semibold">{{ product.name }}</h3>
+                <p class="text-sm text-gray-500">{{ product.get_category_display }}</p>
+                <p class="text-green-700 font-bold mt-2">Ksh {{ product.price }}</p>
+                <a href="{% url 'products:product_detail' product.id %}" class="mt-3 inline-block bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">View</a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-center text-gray-500 mt-6">No products found.</p>
+      {% endif %}
+    {% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-sm text-gray-500 py-6 mt-6 bg-white shadow-inner">
+    &copy; {% now "Y" %} AgroConnectAfrica
+  </footer>
+</body>
+</html>

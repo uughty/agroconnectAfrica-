@@ -1,25 +1,39 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse, Http404
-from django.urls import reverse
+from django.http import Http404, JsonResponse
 from .models import Product, Category
 from .forms import ProductForm
 from .utils import user_is_farmer, product_image_url
-from django.http import JsonResponse
 
+# -------------------- Product Views --------------------
 
-
-
-def product_list(request: HttpRequest) -> HttpResponse:
+def product_list(request):
     category = request.GET.get("category", "").strip()
     q = request.GET.get("q", "").strip()
+    sort = request.GET.get("sort") or "-created_at"
+    min_price = request.GET.get("min_price")
+    max_price = request.GET.get("max_price")
 
-    products = Product.objects.filter(is_active=True)
-    if category in dict(Category.choices):
+    products = Product.objects.all()
+
+    # Category filter
+    if category:
         products = products.filter(category=category)
+
+    # Search filter
     if q:
         products = products.filter(name__icontains=q)
+
+    # Price filter
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+
+    # Sorting
+    if sort:
+        products = products.order_by(sort)
 
     ctx = {
         "products": products,
@@ -29,23 +43,24 @@ def product_list(request: HttpRequest) -> HttpResponse:
     }
     return render(request, "products/product_list.html", ctx)
 
-def product_detail(request: HttpRequest, pk: int) -> HttpResponse:
-    product = get_object_or_404(Product, pk=pk, is_active=True)
-    ctx = {"product": product, "image_url": product_image_url(product)}
+
+def product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk)
     return render(request, "products/product_detail.html", {"product": product})
 
-# ---------- Farmer Views ----------
 
 @login_required
-def my_products(request: HttpRequest) -> HttpResponse:
+def my_products(request):
     if not user_is_farmer(request.user):
         messages.error(request, "Only farmers can access this page.")
         return redirect("product_list")
+
     products = Product.objects.filter(farmer=request.user)
     return render(request, "products/my_products.html", {"products": products})
 
+
 @login_required
-def add_product(request: HttpRequest) -> HttpResponse:
+def add_product(request):
     if not user_is_farmer(request.user):
         messages.error(request, "Only farmers can add products.")
         return redirect("product_list")
@@ -62,8 +77,9 @@ def add_product(request: HttpRequest) -> HttpResponse:
         form = ProductForm()
     return render(request, "products/product_form.html", {"form": form, "mode": "create"})
 
+
 @login_required
-def edit_product(request: HttpRequest, pk: int) -> HttpResponse:
+def edit_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if not user_is_farmer(request.user) or product.farmer != request.user:
         messages.error(request, "You do not have permission to edit this product.")
@@ -79,8 +95,9 @@ def edit_product(request: HttpRequest, pk: int) -> HttpResponse:
         form = ProductForm(instance=product)
     return render(request, "products/product_form.html", {"form": form, "mode": "edit", "product": product})
 
+
 @login_required
-def delete_product(request: HttpRequest, pk: int) -> HttpResponse:
+def delete_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if not user_is_farmer(request.user) or product.farmer != request.user:
         messages.error(request, "You do not have permission to delete this product.")
@@ -91,12 +108,12 @@ def delete_product(request: HttpRequest, pk: int) -> HttpResponse:
         messages.success(request, "Product deleted.")
         return redirect("my_products")
 
-    # Simple confirm screen
     return render(request, "products/confirm_delete.html", {"product": product})
 
-# ---------- Cart (Session Based) ----------
 
-CART_KEY = "cart_items"  # session key, store dict {product_id: qty}
+# -------------------- Cart --------------------
+
+CART_KEY = "cart_items"
 
 def _get_cart(session):
     return session.get(CART_KEY, {})
@@ -105,56 +122,70 @@ def _save_cart(session, cart):
     session[CART_KEY] = cart
     session.modified = True
 
+
 @login_required
-def cart(request: HttpRequest) -> HttpResponse:
+def cart(request):
     cart = _get_cart(request.session)
     product_ids = [int(pid) for pid in cart.keys()]
-    products = Product.objects.filter(id__in=product_ids, is_active=True)
-    items = []
-    total = 0
+    products = Product.objects.filter(id__in=product_ids)
+
+    items, total = [], 0
     for p in products:
         qty = int(cart.get(str(p.id), 0))
         line_total = p.price * qty
         total += line_total
-        items.append({"product": p, "qty": qty, "line_total": line_total, "image_url": product_image_url(p)})
+        items.append({
+            "product": p,
+            "qty": qty,
+            "line_total": line_total,
+            "image_url": product_image_url(p)
+        })
 
     return render(request, "products/cart.html", {"items": items, "total": total})
 
+
 @login_required
-def add_to_cart(request: HttpRequest, pk: int) -> HttpResponse:
+def add_to_cart(request, pk):
     if request.method != "POST":
         raise Http404()
 
-    product = get_object_or_404(Product, pk=pk, is_active=True)
+    product = get_object_or_404(Product, pk=pk)
     cart = _get_cart(request.session)
     current = int(cart.get(str(product.id), 0))
     cart[str(product.id)] = current + 1
     _save_cart(request.session, cart)
+
     messages.success(request, f"Added {product.name} to cart.")
     return redirect("product_list")
 
+
 @login_required
-def remove_from_cart(request: HttpRequest, pk: int) -> HttpResponse:
+def remove_from_cart(request, pk):
     if request.method != "POST":
         raise Http404()
+
     cart = _get_cart(request.session)
     if str(pk) in cart:
         del cart[str(pk)]
         _save_cart(request.session, cart)
         messages.info(request, "Item removed.")
+
     return redirect("cart")
 
+
 @login_required
-def clear_cart(request: HttpRequest) -> HttpResponse:
+def clear_cart(request):
     if request.method != "POST":
         raise Http404()
     _save_cart(request.session, {})
     messages.info(request, "Cart cleared.")
     return redirect("cart")
 
+
+# -------------------- Search --------------------
+
 def product_search(request):
-    """Return JSON for live search dropdown"""
     query = request.GET.get("q", "")
-    products = Product.objects.filter(name__icontains=query)[:10]  # top 10 matches
+    products = Product.objects.filter(name__icontains=query)[:10]
     results = [{"id": p.id, "name": p.name} for p in products]
     return JsonResponse(results, safe=False)

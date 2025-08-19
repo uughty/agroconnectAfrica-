@@ -1,37 +1,432 @@
 {% extends "products/base_products.html" %}
 {% load static %}
 
+
+
 {% block title %}{{ product.name }} — AgroConnectAfrica{% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-lg shadow p-6 grid md:grid-cols-2 gap-6">
-  <div>
-    <img
-      src="{% if product.image %}{{ product.image.url }}{% elif product.category == 'Livestock' %}{% static 'products/images/livestock.jpg' %}
-           {% elif product.category == 'Crops' %}{% static 'products/images/crops.jpg' %}
-           {% elif product.category == 'Fruits' %}{% static 'products/images/fruits.jpg' %}
-           {% elif product.category == 'Vegetables' %}{% static 'products/images/vegetables.jpg' %}
-           {% elif product.category == 'Grains' %}{% static 'products/images/grains.jpg' %}
-           {% else %}{% static 'products/images/default.jpg' %}{% endif %}"
-      alt="{{ product.name }}" class="w-full h-80 object-cover rounded">
-  </div>
-  <div>
-    <h1 class="text-3xl font-bold text-green-800">{{ product.name }}</h1>
-    <div class="text-gray-500 mb-2">{{ product.category }}</div>
-    <div class="text-3xl font-bold text-green-600 mb-4">${{ product.price }}</div>
-    <p class="text-gray-700">{{ product.description }}</p>
 
-    <div class="mt-6 flex gap-3">
-      <form method="post" action="{% url 'add_to_cart' product.id %}">
-        {% csrf_token %}
-        <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" type="submit">Add to Cart</button>
-      </form>
+<!-- Breadcrumbs -->
+<nav class="text-sm text-gray-600 mb-4" aria-label="Breadcrumb">
+  <ol class="flex items-center gap-2 flex-wrap">
+    <li><a href="{% url 'products:product_list' %}" class="hover:underline">Products</a></li>
+    <li aria-hidden="true" class="text-gray-400">/</li>
+    {% if product.category %}
+      <li><a href="{% url 'products:product_list' %}?category={{ product.category }}" class="hover:underline">{{ product.get_category_display|default:product.category }}</a></li>
+      <li aria-hidden="true" class="text-gray-400">/</li>
+    {% endif %}
+    <li class="text-gray-800 font-medium truncate max-w-[60ch]" aria-current="page">{{ product.name }}</li>
+  </ol>
+</nav>
 
-      {% if user.is_authenticated and user == product.farmer %}
-        <a href="{% url 'edit_product' product.id %}" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Edit</a>
-        <a href="{% url 'delete_product' product.id %}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Delete</a>
-      {% endif %}
+<!-- Product card -->
+<section class="bg-white rounded-2xl shadow p-4 md:p-6">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    {# ------------------------- Gallery (Left) ------------------------- #}
+    <div>
+      <div class="relative rounded-xl overflow-hidden bg-gray-100 aspect-[4/3]" id="mainImageWrap">
+        {% if product.image %}
+          <img id="mainImage" src="{{ product.image.url }}" alt="{{ product.name }}" class="h-full w-full object-cover" loading="eager">
+        {% else %}
+          {# Category‑aware placeholder fallbacks #}
+          {% if product.category == 'Livestock' %}
+            <img id="mainImage" src="{% static 'products/images/livestock.jpg' %}" alt="{{ product.name }}" class="h-full w-full object-cover" loading="eager">
+          {% elif product.category == 'Crops' %}
+            <img id="mainImage" src="{% static 'products/images/crops.jpg' %}" alt="{{ product.name }}" class="h-full w-full object-cover" loading="eager">
+          {% elif product.category == 'Fruits' %}
+            <img id="mainImage" src="{% static 'products/images/fruits.jpg' %}" alt="{{ product.name }}" class="h-full w-full object-cover" loading="eager">
+          {% elif product.category == 'Vegetables' %}
+            <img id="mainImage" src="{% static 'products/images/vegetables.jpg' %}" alt="{{ product.name }}" class="h-full w-full object-cover" loading="eager">
+          {% elif product.category == 'Grains' %}
+            <img id="mainImage" src="{% static 'products/images/grains.jpg' %}" alt="{{ product.name }}" class="h-full w-full object-cover" loading="eager">
+          {% else %}
+            <img id="mainImage" src="{% static 'products/images/default.jpg' %}" alt="{{ product.name }}" class="h-full w-full object-cover" loading="eager">
+          {% endif %}
+        {% endif %}
+
+        <!-- Zoom hint overlay (desktop) -->
+        <div class="hidden md:flex absolute top-2 right-2 items-center gap-2 bg-white/90 backdrop-blur px-2 py-1 rounded-full shadow text-xs text-gray-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span>Hover to zoom</span>
+        </div>
+      </div>
+
+      {# Thumbnails — if you have a gallery, loop it; otherwise repeat main #}
+      <div class="mt-3 grid grid-cols-5 sm:grid-cols-6 md:grid-cols-7 gap-2" id="thumbRow">
+        {% with thumbs=product.gallery_images.all|default:None %}
+          {% if thumbs %}
+            {% for gi in thumbs %}
+              <button type="button" class="thumbBtn group relative rounded-lg overflow-hidden border focus:outline-none focus:ring-2 focus:ring-green-500" data-src="{{ gi.image.url }}" aria-label="Preview image {{ forloop.counter }}">
+                <img src="{{ gi.image.url }}" alt="{{ product.name }} thumbnail {{ forloop.counter }}" class="h-16 w-full object-cover group-hover:opacity-90">
+              </button>
+            {% endfor %}
+          {% else %}
+            {% for i in "12345" %}
+              <button type="button" class="thumbBtn group relative rounded-lg overflow-hidden border focus:outline-none focus:ring-2 focus:ring-green-500" data-src="{{ product.image.url|default:static('products/images/default.jpg') }}" aria-label="Preview image {{ forloop.counter }}">
+                <img src="{{ product.image.url|default:static('products/images/default.jpg') }}" alt="{{ product.name }} thumbnail {{ forloop.counter }}" class="h-16 w-full object-cover group-hover:opacity-90">
+              </button>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+
+    {# ------------------------- Details (Right) ------------------------- #}
+    <div>
+      <!-- Title row -->
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">{{ product.name }}</h1>
+          <div class="mt-1 flex items-center gap-2 text-sm">
+            {% if product.category %}
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-green-700 bg-green-50 border border-green-100">
+                <span class="h-2 w-2 rounded-full bg-green-500"></span>
+                {{ product.get_category_display|default:product.category }}
+              </span>
+            {% endif %}
+            {% if product.created_at %}
+              <span class="text-gray-500">Added {{ product.created_at|date:"M j, Y" }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        {# Farmer (seller) quick badge #}
+        <div class="shrink-0 text-right">
+          {% if product.farmer %}
+            <div class="text-xs text-gray-500">Sold by</div>
+            <div class="text-sm font-medium text-gray-800">{{ product.farmer.get_full_name|default:product.farmer.username }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Price / Stock / Unit -->
+      <div class="mt-4 flex items-end justify-between gap-6">
+        <div>
+          <div class="text-3xl md:text-4xl font-extrabold text-green-700">Ksh {{ product.price }}</div>
+          {% if product.unit %}
+            <div class="text-xs text-gray-500">per {{ product.unit }}</div>
+          {% endif %}
+        </div>
+        <div class="text-right">
+          {% with stock=product.quantity|default:product.stock|default:0 %}
+            {% if stock > 10 %}
+              <span class="inline-block text-sm px-2 py-1 rounded bg-green-50 text-green-700 border border-green-100">In stock</span>
+            {% elif stock > 0 %}
+              <span class="inline-block text-sm px-2 py-1 rounded bg-yellow-50 text-yellow-700 border border-yellow-100">Low stock ({{ stock }})</span>
+            {% else %}
+              <span class="inline-block text-sm px-2 py-1 rounded bg-red-50 text-red-700 border border-red-100">Out of stock</span>
+            {% endif %}
+          {% endwith %}
+        </div>
+      </div>
+
+      <!-- Purchase actions -->
+      <div class="mt-6 space-y-3">
+        <form method="post" action="{% url 'products:add_to_cart' product.id %}" class="flex items-center gap-3">
+          {% csrf_token %}
+          <label for="qty" class="sr-only">Quantity</label>
+          <div class="flex items-center rounded-xl border">
+            <button type="button" id="qtyMinus" class="px-3 py-2" aria-label="Decrease quantity">−</button>
+            <input id="qty" name="quantity" type="number" value="1" min="1" step="1" class="w-16 border-x py-2 text-center focus:outline-none" />
+            <button type="button" id="qtyPlus" class="px-3 py-2" aria-label="Increase quantity">+</button>
+          </div>
+          <button type="submit" class="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-xl hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M2.25 3a.75.75 0 000 1.5H5l2.25 10.5a2.25 2.25 0 002.206 1.8h6.838a2.25 2.25 0 002.206-1.8L20.25 7.5H6.606"/></svg>
+            <span>Add to Cart</span>
+          </button>
+          <a href="{% url 'products:cart' %}" class="text-sm text-gray-600 hover:text-gray-900">Go to cart →</a>
+        </form>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <button type="button" id="wishlistBtn" class="px-4 py-2 rounded-xl border hover:bg-gray-50">♥ Wishlist</button>
+          <button type="button" id="shareBtn" class="px-4 py-2 rounded-xl border hover:bg-gray-50">Share</button>
+          {% if user.is_authenticated and user == product.farmer %}
+            <a href="{% url 'products:edit_product' product.id %}" class="px-4 py-2 rounded-xl bg-yellow-500 text-white hover:bg-yellow-600">Edit</a>
+            <a href="{% url 'products:delete_product' product.id %}" class="px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600">Delete</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Trust widgets -->
+      <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-gray-700">
+        <div class="flex items-center gap-2 p-3 rounded-xl bg-gray-50">
+          <span class="h-2 w-2 rounded-full bg-green-500"></span>
+          <div>Direct from farmers</div>
+        </div>
+        <div class="flex items-center gap-2 p-3 rounded-xl bg-gray-50">
+          <span class="h-2 w-2 rounded-full bg-green-500"></span>
+          <div>Secure payments</div>
+        </div>
+        <div class="flex items-center gap-2 p-3 rounded-xl bg-gray-50">
+          <span class="h-2 w-2 rounded-full bg-green-500"></span>
+          <div>Fast local delivery</div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
+
+  {# ------------------------- Tabs: Description / Specs / Reviews ------------------------- #}
+  <div class="mt-8">
+    <div class="flex flex-wrap gap-2 border-b">
+      <button class="tabBtn px-4 py-2 rounded-t-lg border-b-2 border-transparent data-[active=true]:border-green-600 data-[active=true]:text-green-700" data-target="#tab-desc" data-active="true">Description</button>
+      <button class="tabBtn px-4 py-2 rounded-t-lg border-b-2 border-transparent data-[active=true]:border-green-600 data-[active=true]:text-green-700" data-target="#tab-specs">Specifications</button>
+      <button class="tabBtn px-4 py-2 rounded-t-lg border-b-2 border-transparent data-[active=true]:border-green-600 data-[active=true]:text-green-700" data-target="#tab-reviews">Reviews</button>
+    </div>
+
+    <!-- Panels -->
+    <section id="tab-desc" class="tabPanel pt-4" data-active="true">
+      <div class="prose max-w-none">
+        {% if product.description %}
+          <p class="text-gray-700 leading-relaxed">{{ product.description|linebreaks }}</p>
+        {% else %}
+          <p class="text-gray-500">No description provided yet.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section id="tab-specs" class="tabPanel hidden pt-4">
+      <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+        <div>
+          <dt class="text-sm text-gray-500">Category</dt>
+          <dd class="font-medium text-gray-800">{{ product.get_category_display|default:product.category|default:"—" }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm text-gray-500">Unit</dt>
+          <dd class="font-medium text-gray-800">{{ product.unit|default:"—" }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm text-gray-500">Available Qty</dt>
+          <dd class="font-medium text-gray-800">{{ product.quantity|default:product.stock|default:"—" }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm text-gray-500">Added on</dt>
+          <dd class="font-medium text-gray-800">{{ product.created_at|date:"M j, Y"|default:"—" }}</dd>
+        </div>
+        {% if product.farmer %}
+        <div class="md:col-span-2">
+          <dt class="text-sm text-gray-500">Farmer</dt>
+          <dd class="font-medium text-gray-800">{{ product.farmer.get_full_name|default:product.farmer.username }}</dd>
+        </div>
+        {% endif %}
+      </dl>
+    </section>
+
+    <section id="tab-reviews" class="tabPanel hidden pt-4">
+      {% with reviews=product.review.all %}
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center gap-2">
+            {% with total=reviews|length %}
+              {% if total %}
+                {% with avg=reviews|average:'rating' %}{% endwith %}
+              {% endif %}
+              <h3 class="text-lg font-semibold text-gray-800">Reviews ({{ total }})</h3>
+            {% endwith %}
+          </div>
+          <div>
+            <a href="#write-review" class="text-sm text-green-700 hover:underline">Write a review</a>
+          </div>
+        </div>
+
+        <!-- List of reviews -->
+        <div class="mt-4 space-y-4">
+          {% for r in reviews %}
+            <article class="border rounded-xl p-4">
+              <div class="flex items-center justify-between">
+                <div class="font-medium text-gray-800">{{ r.user.get_full_name|default:r.user.username }}</div>
+                <time class="text-xs text-gray-500">{{ r.created_at|date:"M j, Y" }}</time>
+              </div>
+              <div class="mt-1 flex items-center gap-1" aria-label="Rating: {{ r.rating }} out of 5">
+                {% for i in "12345" %}
+                  {% if forloop.counter <= r.rating %}
+                    <span class="inline-block">⭐</span>
+                  {% else %}
+                    <span class="inline-block text-gray-300">⭐</span>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              {% if r.comment %}<p class="mt-2 text-gray-700">{{ r.comment|linebreaksbr }}</p>{% endif %}
+            </article>
+          {% empty %}
+            <p class="text-gray-500">No reviews yet. Be the first to review this product.</p>
+          {% endfor %}
+        </div>
+      {% endwith %}
+
+      <!-- Write a review -->
+      <div id="write-review" class="mt-6 border rounded-2xl p-4">
+        {% if user.is_authenticated %}
+          <h4 class="text-md font-semibold text-gray-800">Write a review</h4>
+          <form method="post" action="{% url 'products:product_detail' product.id %}#tab-reviews" class="mt-3 space-y-3">
+            {% csrf_token %}
+            <div>
+              <label for="rating" class="block text-sm text-gray-600">Rating</label>
+              <select id="rating" name="rating" class="mt-1 rounded-lg border px-3 py-2 w-full" required>
+                <option value="">Select…</option>
+                <option value="5">★★★★★ — Excellent</option>
+                <option value="4">★★★★☆ — Very good</option>
+                <option value="3">★★★☆☆ — Good</option>
+                <option value="2">★★☆☆☆ — Fair</option>
+                <option value="1">★☆☆☆☆ — Poor</option>
+              </select>
+            </div>
+            <div>
+              <label for="comment" class="block text-sm text-gray-600">Comment</label>
+              <textarea id="comment" name="comment" rows="4" class="mt-1 rounded-lg border px-3 py-2 w-full" placeholder="Share details about quality, freshness, delivery, etc."></textarea>
+            </div>
+            <button type="submit" class="bg-green-600 text-white px-5 py-2 rounded-xl hover:bg-green-700">Submit review</button>
+          </form>
+        {% else %}
+          <p class="text-gray-600">Please <a class="text-green-700 underline" href="{% url 'login' %}?next={{ request.path }}#tab-reviews">log in</a> to write a review.</p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</section>
+
+{# ------------------------- Related Products ------------------------- #}
+<section class="mt-10">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold text-gray-900">Related products</h2>
+    <a href="{% url 'products:product_list' %}{% if product.category %}?category={{ product.category }}{% endif %}" class="text-sm text-green-700 hover:underline">See more</a>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    {% with rel=related_products|default:None %}
+      {% if rel %}
+        {% for p in rel %}
+          <article class="group bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden">
+            <a href="{% url 'products:product_detail' p.id %}" class="block">
+              <div class="relative aspect-[4/3] bg-gray-100">
+                {% if p.image %}
+                  <img src="{{ p.image.url }}" alt="{{ p.name }}" class="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                {% else %}
+                  <img src="{% static 'products/images/default.jpg' %}" alt="{{ p.name }}" class="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                {% endif %}
+              </div>
+              <div class="p-3">
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="text-sm font-medium text-gray-800 line-clamp-2">{{ p.name }}</h3>
+                  <div class="text-right text-green-700 font-bold">Ksh {{ p.price }}</div>
+                </div>
+              </div>
+            </a>
+          </article>
+        {% endfor %}
+      {% else %}
+        {% for i in "1234" %}
+          <div class="border rounded-2xl p-4 bg-white">
+            <div class="h-32 bg-gray-100 rounded"></div>
+            <div class="mt-2 h-4 bg-gray-100 rounded w-3/4"></div>
+            <div class="mt-1 h-3 bg-gray-100 rounded w-1/2"></div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+</section>
+
+<!-- JSON‑LD structured data for SEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{{ product.name|escapejs }}",
+  "description": {{ product.description|default:""|striptags|truncatechars:500|safe|escapejs }},
+  "sku": "{{ product.id }}",
+  "brand": {
+    "@type": "Brand",
+    "name": "AgroConnectAfrica"
+  },
+  "category": "{{ product.get_category_display|default:product.category|escapejs }}",
+  "image": [
+    {% if product.image %}"{{ product.image.url }}"{% else %}"{% static 'products/images/default.jpg' %}"{% endif %}
+  ],
+  "offers": {
+    "@type": "Offer",
+    "availability": "{% with stock=product.quantity|default:product.stock|default:0 %}{% if stock > 0 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}{% endwith %}",
+    "priceCurrency": "KES",
+    "price": "{{ product.price }}"
+  }
+}
+</script>
+
+<!-- Client interactivity for this page only (no external libs) -->
+<script>
+(function() {
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+  // Thumbnail → main image swap
+  const mainImg = $('#mainImage');
+  $$('#thumbRow .thumbBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const src = btn.getAttribute('data-src');
+      if (!src || !mainImg) return;
+      mainImg.src = src;
+    });
+  });
+
+  // Quantity controls
+  const qty = $('#qty');
+  $('#qtyMinus')?.addEventListener('click', () => {
+    const v = parseInt(qty.value || '1', 10) || 1;
+    qty.value = Math.max(1, v - 1);
+  });
+  $('#qtyPlus')?.addEventListener('click', () => {
+    const v = parseInt(qty.value || '1', 10) || 1;
+    qty.value = v + 1;
+  });
+
+  // Wishlist (client‑side only placeholder)
+  $('#wishlistBtn')?.addEventListener('click', () => {
+    try {
+      const key = 'agro_wishlist';
+      const id = '{{ product.id }}';
+      const data = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!data.includes(id)) data.push(id);
+      localStorage.setItem(key, JSON.stringify(data));
+      alert('Saved to wishlist');
+    } catch(e) { console.warn(e); }
+  });
+
+  // Share button
+  $('#shareBtn')?.addEventListener('click', async () => {
+    const shareData = { title: '{{ product.name|escapejs }}', text: 'Check this out on AgroConnectAfrica', url: window.location.href };
+    try {
+      if (navigator.share) await navigator.share(shareData); else {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Link copied');
+      }
+    } catch(e) { /* user cancelled */ }
+  });
+
+  // Tabs
+  const tabs = $$('.tabBtn');
+  const panels = $$('.tabPanel');
+  function activateTab(target) {
+    tabs.forEach(t => t.dataset.active = (t.dataset.target === target));
+    panels.forEach(p => {
+      if ('#' + p.id === target) { p.classList.remove('hidden'); p.dataset.active = 'true'; }
+      else { p.classList.add('hidden'); p.dataset.active = 'false'; }
+    });
+    if (history.replaceState) { history.replaceState({}, '', target); }
+  }
+  tabs.forEach(t => t.addEventListener('click', () => activateTab(t.dataset.target)));
+
+  // Open tab from hash (#tab-reviews)
+  if (location.hash && $(location.hash)) activateTab(location.hash);
+
+  // Keyboard navigation for thumbnails
+  $$('#thumbRow .thumbBtn').forEach((btn, idx, arr) => {
+    btn.setAttribute('tabindex', '0');
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') arr[Math.min(idx + 1, arr.length - 1)].focus();
+      if (e.key === 'ArrowLeft') arr[Math.max(idx - 1, 0)].focus();
+      if (e.key === 'Enter' || e.key === ' ') btn.click();
+    });
+  });
+})();
+</script>
+
 {% endblock %}

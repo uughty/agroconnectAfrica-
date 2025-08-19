@@ -1,94 +1,551 @@
-{% extends "products/base_products.html" %}
-{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Products — AgroConnectAfrica</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+            color: #1f2937; /* Tailwind gray-900 */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body class="p-4">
 
-{% block title %}Browse Products — AgroConnectAfrica{% endblock %}
-
-{% block content %}
-<header class="text-center mb-8">
-  <h1 class="text-4xl font-bold text-green-700">Browse Products</h1>
-  <p class="mt-2 text-lg text-gray-600">Find fresh and quality agricultural products</p>
-</header>
-
-<form method="get" action="">
-    <input type="text" id="search-input" placeholder="Search products..." autocomplete="off">
-    <div id="search-results" class="dropdown"></div>
-</form>
-
-<style>
-.dropdown {
-    position: absolute;
-    background: white;
-    border: 1px solid #ccc;
-    max-height: 200px;
-    overflow-y: auto;
-    width: 200px;
-    display: none;
-}
-.dropdown div {
-    padding: 8px;
-    cursor: pointer;
-}
-.dropdown div:hover {
-    background: #f0f0f0;
-}
-</style>
-
-
-{% if products %}
-  <section class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for product in products %}
-      <a href="{% url 'product_detail' product.id %}" class="block bg-white rounded-lg shadow hover:shadow-lg overflow-hidden">
-        <img
-          src="{% if product.image %}{{ product.image.url }}{% elif product.category == 'Livestock' %}{% static 'products/images/livestock.jpg' %}
-               {% elif product.category == 'Crops' %}{% static 'products/images/crops.jpg' %}
-               {% elif product.category == 'Fruits' %}{% static 'products/images/fruits.jpg' %}
-               {% elif product.category == 'Vegetables' %}{% static 'products/images/vegetables.jpg' %}
-               {% elif product.category == 'Grains' %}{% static 'products/images/grains.jpg' %}
-               {% else %}{% static 'products/images/default.jpg' %}{% endif %}"
-          alt="{{ product.name }}" class="w-full h-48 object-cover">
-        <div class="p-5">
-          <h2 class="text-xl font-semibold text-green-800">{{ product.name }}</h2>
-          <p class="text-gray-600 line-clamp-2">{{ product.description }}</p>
-          <div class="mt-3 text-2xl font-bold text-green-600">${{ product.price }}</div>
+<!-- Hero / Header -->
+<section class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-700 to-green-500 text-white shadow-lg">
+    <div class="absolute inset-0 opacity-10" aria-hidden="true">
+        <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1200 600">
+            <defs>
+                <linearGradient id="grain" x1="0" x2="1" y1="0" y2="1">
+                    <stop stop-color="#fff" stop-opacity="0.6" offset="0"/>
+                    <stop stop-color="#fff" stop-opacity="0" offset="1"/>
+                </linearGradient>
+            </defs>
+            <rect width="1200" height="600" fill="url(#grain)"/>
+        </svg>
+    </div>
+    <div class="relative z-10 px-6 py-10 md:px-10 md:py-14 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Browse Products</h1>
+            <p class="mt-2 text-white/90">Find fresh, high-quality agricultural products from Kenyan farmers.</p>
         </div>
-      </a>
-    {% endfor %}
-  </section>
-{% else %}
-  <p class="text-center text-gray-500 text-xl">No products found.</p>
-{% endif %}
-{% endblock %}
+        <div class="flex items-center gap-3">
+            <a href="carts.html" class="inline-flex items-center gap-2 bg-white/15 backdrop-blur px-4 py-2 rounded-xl hover:bg-white/20 transition" aria-label="Open cart">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m0 0h14m-14 0a2 2 0 11-4 0 2 2 0 014 0zm14 0a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <span class="hidden sm:inline">View Cart</span>
+            </a>
+            <a href="#" class="inline-flex items-center gap-2 bg-white text-green-700 font-semibold px-4 py-2 rounded-xl hover:bg-gray-50 transition" aria-label="Add product">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0v-6H5a1 1 0 110-2h6V5a1 1 0 011-1z"/></svg>
+                <span>New Product</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Filters + Search Toolbar -->
+<section class="mt-6 grid gap-4 md:grid-cols-12">
+    <!-- Sidebar (Categories & Price) -->
+    <aside class="md:col-span-3 bg-white rounded-2xl p-4 shadow">
+        <h2 class="text-lg font-semibold text-gray-800">Filters</h2>
+
+        <!-- Category chips -->
+        <div class="mt-4">
+            <h3 class="text-sm font-medium text-gray-600">Categories</h3>
+            <div id="categoryChips" class="mt-2 flex flex-wrap gap-2" role="list" aria-label="Categories">
+                <!-- Category buttons will be rendered here by JS -->
+            </div>
+        </div>
+
+        <!-- Price range -->
+        <form id="priceFilterForm" class="mt-6 space-y-3">
+            <h3 class="text-sm font-medium text-gray-600">Price Range (Ksh)</h3>
+            <div class="flex gap-3">
+                <input type="number" inputmode="numeric" id="minPrice" placeholder="Min"
+                       class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" />
+                <input type="number" inputmode="numeric" id="maxPrice" placeholder="Max"
+                       class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" />
+            </div>
+            <button class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition" type="submit">Apply</button>
+        </form>
+
+        <!-- Reset filters link -->
+        <button id="resetFiltersBtn" class="mt-3 inline-block text-sm text-gray-500 hover:text-gray-700">Reset all filters</button>
+    </aside>
+
+    <!-- Main column -->
+    <div class="md:col-span-9">
+        <!-- Search + Sort Bar -->
+        <div class="bg-white rounded-2xl p-4 shadow flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <div class="relative flex-1">
+                <label for="searchBox" class="sr-only">Search products</label>
+                <input id="searchBox" type="search" autocomplete="off"
+                       placeholder="Search by name…"
+                       class="w-full rounded-xl border px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-green-500"
+                       aria-describedby="searchHelp" />
+                <div class="pointer-events-none absolute left-3 top-2.5 text-gray-400" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/></svg>
+                </div>
+                <p id="searchHelp" class="sr-only">Type to filter products instantly</p>
+
+                <!-- Live typeahead dropdown -->
+                <div id="typeahead" class="absolute z-20 mt-2 hidden w-full rounded-xl border bg-white shadow-lg overflow-hidden"></div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <label for="sort" class="text-sm text-gray-600">Sort</label>
+                    <select id="sort" class="rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="-created">Newest</option>
+                        <option value="name">Name (A→Z)</option>
+                        <option value="-price">Price (High→Low)</option>
+                        <option value="price">Price (Low→High)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results header -->
+        <div class="mt-4 flex items-center justify-between text-sm text-gray-600">
+            <div>
+                <span id="productCount">0</span> result<span id="productCountSuffix">s</span>
+                <span id="queryDisplay" class="hidden"> for <span class="font-medium text-gray-800"></span></span>
+                <span id="categoryDisplay" class="hidden"> in <span class="font-medium text-gray-800"></span></span>
+            </div>
+            <div class="hidden sm:flex items-center gap-2" aria-label="View options">
+                <button id="gridBtn" class="px-2 py-1 rounded border bg-gray-50">Grid</button>
+                <button id="listBtn" class="px-2 py-1 rounded border">List</button>
+            </div>
+        </div>
+
+        <!-- Skeletons (hidden by default, shown during load) -->
+        <div id="skeletons" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 hidden" aria-hidden="true">
+            <div class="animate-pulse"><div class="h-44 bg-gray-200 rounded-xl"></div><div class="mt-3 h-4 bg-gray-200 rounded w-3/4"></div><div class="mt-2 h-3 bg-gray-200 rounded w-1/2"></div><div class="mt-4 h-9 bg-gray-200 rounded"></div></div>
+            <div class="animate-pulse"><div class="h-44 bg-gray-200 rounded-xl"></div><div class="mt-3 h-4 bg-gray-200 rounded w-3/4"></div><div class="mt-2 h-3 bg-gray-200 rounded w-1/2"></div><div class="mt-4 h-9 bg-gray-200 rounded"></div></div>
+            <div class="animate-pulse"><div class="h-44 bg-gray-200 rounded-xl"></div><div class="mt-3 h-4 bg-gray-200 rounded w-3/4"></div><div class="mt-2 h-3 bg-gray-200 rounded w-1/2"></div><div class="mt-4 h-9 bg-gray-200 rounded"></div></div>
+            <div class="animate-pulse"><div class="h-44 bg-gray-200 rounded-xl"></div><div class="mt-3 h-4 bg-gray-200 rounded w-3/4"></div><div class="mt-2 h-3 bg-gray-200 rounded w-1/2"></div><div class="mt-4 h-9 bg-gray-200 rounded"></div></div>
+            <div class="animate-pulse"><div class="h-44 bg-gray-200 rounded-xl"></div><div class="mt-3 h-4 bg-gray-200 rounded w-3/4"></div><div class="mt-2 h-3 bg-gray-200 rounded w-1/2"></div><div class="mt-4 h-9 bg-gray-200 rounded"></div></div>
+            <div class="animate-pulse"><div class="h-44 bg-gray-200 rounded-xl"></div><div class="mt-3 h-4 bg-gray-200 rounded w-3/4"></div><div class="mt-2 h-3 bg-gray-200 rounded w-1/2"></div><div class="mt-4 h-9 bg-gray-200 rounded"></div></div>
+        </div>
+
+        <!-- Product grid/list container -->
+       
+        <div id="productCards" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% if products %}
+        {% for product in products %}
+            {% include "products/_product_card.html" with product=product %}
+        {% endfor %}
+    {% else %}
+        <div class="col-span-full">
+            <div class="rounded-2xl border border-dashed p-10 text-center bg-white">
+                <h3 class="mt-4 text-lg font-semibold text-gray-800">No products found</h3>
+                <p class="mt-1 text-sm text-gray-600">Try widening your search or clearing filters.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="col-span-full hidden">
+            <div class="rounded-2xl border border-dashed p-10 text-center bg-white">
+                <div class="mx-auto h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 5a1 1 0 10-2 0v4H7a1 1 0 100 2h4v4a1 1 0 102 0v-4h4a1 1 0 100-2h-4V7z"/></svg>
+                </div>
+                <h3 class="mt-4 text-lg font-semibold text-gray-800">No products found</h3>
+                <p class="mt-1 text-sm text-gray-600">Try widening your search or clearing filters.</p>
+                <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+                    <button id="emptyStateResetBtn" class="px-4 py-2 rounded-xl border hover:bg-gray-50">Reset Filters</button>
+                    <a href="#" class="px-4 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700">Add Your First Product</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination (dummy for client-side demo) -->
+        <!-- In a real app, this would be generated by Django and updated via AJAX if necessary -->
+        <nav aria-label="Pagination" class="mt-6 flex items-center justify-center gap-2 hidden">
+            <button class="px-3 py-1 rounded border">« First</button>
+            <button class="px-3 py-1 rounded border">‹ Prev</button>
+            <span class="px-3 py-1 rounded bg-green-50 border text-green-700">Page 1 of 1</span>
+            <button class="px-3 py-1 rounded border">Next ›</button>
+            <button class="px-3 py-1 rounded border">Last »</button>
+        </nav>
+    </div>
+</section>
+
+<!-- Sticky quick actions (mobile) -->
+<div class="fixed inset-x-0 bottom-4 z-20 px-4 md:hidden">
+    <div class="mx-auto max-w-md rounded-2xl border bg-white/95 backdrop-blur shadow-lg">
+        <div class="flex items-center justify-between p-3">
+            <a href="#" class="flex-1 text-center py-2 hover:bg-gray-50 rounded-xl">Cart</a>
+            <div class="w-px h-6 bg-gray-200"></div>
+            <button id="scrollTopBtn" class="flex-1 text-center py-2 hover:bg-gray-50 rounded-xl">Top</button>
+            <div class="w-px h-6 bg-gray-200"></div>
+            <a href="#" class="flex-1 text-center py-2 hover:bg-gray-50 rounded-xl">Add</a>
+        </div>
+    </div>
+</div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const searchInput = document.getElementById("search-input");
-    const resultsDiv = document.getElementById("search-results");
+    document.addEventListener('DOMContentLoaded', () => {
+        const qs = (sel, root = document) => root.querySelector(sel);
+        const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-    searchInput.addEventListener("keyup", function() {
-        let query = this.value;
-        if (query.length < 2) {
-            resultsDiv.style.display = "none";
-            return;
+        // DOM elements
+        const productCardsContainer = qs('#productCards');
+        const skeletons = qs('#skeletons');
+        const typeaheadDiv = qs('#typeahead');
+        const searchBox = qs('#searchBox');
+        const productCountSpan = qs('#productCount');
+        const productCountSuffix = qs('#productCountSuffix');
+        const queryDisplaySpan = qs('#queryDisplay');
+        const queryDisplayText = qs('#queryDisplay span');
+        const categoryDisplaySpan = qs('#categoryDisplay');
+        const categoryDisplayText = qs('#categoryDisplay span');
+        const gridBtn = qs('#gridBtn');
+        const listBtn = qs('#listBtn');
+        const scrollTopBtn = qs('#scrollTopBtn');
+        const categoryChipsDiv = qs('#categoryChips');
+        const minPriceInput = qs('#minPrice');
+        const maxPriceInput = qs('#maxPrice');
+        const priceFilterForm = qs('#priceFilterForm');
+        const sortSelect = qs('#sort');
+        const resetFiltersBtn = qs('#resetFiltersBtn');
+        const emptyStateDiv = qs('#emptyState');
+        const emptyStateResetBtn = qs('#emptyStateResetBtn');
+
+        // Dummy Data (replace with your actual data from Django context/JSON endpoint)
+        const DUMMY_PRODUCTS = [
+            // Vegetables
+            { id: 1, name: 'Fresh Organic Tomatoes', description: 'Locally grown, juicy organic tomatoes, perfect for salads and sauces.', price: 150, unit: 'kg', category: 'vegetables', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Tomatoes', created: '2023-01-15T10:00:00Z', stock: 50 },
+            { id: 5, name: 'Organic Carrots', description: 'Crisp and sweet organic carrots, perfect for snacking or cooking.', price: 90, unit: 'kg', category: 'vegetables', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Carrots', created: '2023-02-12T16:45:00Z', stock: 45 },
+            { id: 7, name: 'Potatoes (Red)', description: 'Versatile red potatoes, good for mashing or roasting.', price: 120, unit: 'kg', category: 'vegetables', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Potatoes', created: '2023-03-01T09:00:00Z', stock: 60 },
+            { id: 9, name: 'Spinach (Local)', description: 'Fresh, leafy green spinach, packed with nutrients.', price: 60, unit: 'bunch', category: 'vegetables', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Spinach', created: '2023-03-10T08:30:00Z', stock: 70 },
+            { id: 10, name: 'Bell Peppers (Mixed)', description: 'Colorful and crunchy bell peppers, great for stir-fries and salads.', price: 180, unit: 'kg', category: 'vegetables', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Bell+Peppers', created: '2023-03-15T10:00:00Z', stock: 35 },
+            { id: 11, name: 'Sweet Potatoes', description: 'Nutritious sweet potatoes, good for roasting or mashing.', price: 110, unit: 'kg', category: 'vegetables', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Sweet+Potatoes', created: '2023-03-20T11:00:00Z', stock: 55 },
+            { id: 12, name: 'Kales (Sukuma Wiki)', description: 'Staple Kenyan vegetable, fresh and tender kales.', price: 50, unit: 'bunch', category: 'vegetables', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Kales', created: '2023-03-25T13:00:00Z', stock: 80 },
+            { id: 13, name: 'Onions (Red)', description: 'Fresh red onions, essential for many dishes.', price: 90, unit: 'kg', category: 'vegetables', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Onions', created: '2023-04-01T09:00:00Z', stock: 65 },
+            { id: 14, name: 'Garlic (Local)', description: 'Pungent local garlic, adds flavor to any meal.', price: 40, unit: 'head', category: 'vegetables', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Garlic', created: '2023-04-05T10:00:00Z', stock: 90 },
+
+            // Fruits
+            { id: 3, name: 'Premium Avocados', description: 'Creamy Hass avocados, ideal for guacamole or toast.', price: 100, unit: 'piece', category: 'fruits', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Avocados', created: '2023-02-01T09:15:00Z', stock: 30 },
+            { id: 15, name: 'Sweet Mangoes', description: 'Ripe and juicy seasonal mangoes, perfect for a tropical treat.', price: 70, unit: 'piece', category: 'fruits', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Mangoes', created: '2023-04-10T11:00:00Z', stock: 40 },
+            { id: 16, name: 'Organic Bananas', description: 'Naturally sweet and energizing organic bananas.', price: 30, unit: 'kg', category: 'fruits', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Bananas', created: '2023-04-15T12:00:00Z', stock: 120 },
+            { id: 17, name: 'Fresh Pineapples', description: 'Tangy and sweet pineapples, great for juices or salads.', price: 150, unit: 'piece', category: 'fruits', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Pineapples', created: '2023-04-20T14:00:00Z', stock: 25 },
+            { id: 18, name: 'Passion Fruits', description: 'Aromatic and tart passion fruits, excellent for desserts and drinks.', price: 120, unit: 'dozen', category: 'fruits', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Passion+Fruits', created: '2023-04-25T15:00:00Z', stock: 30 },
+            { id: 19, name: 'Oranges (Valencia)', description: 'Sweet and seedless Valencia oranges, bursting with vitamin C.', price: 80, unit: 'kg', category: 'fruits', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Oranges', created: '2023-05-01T09:00:00Z', stock: 70 },
+            { id: 20, name: 'Watermelon (Sweet)', description: 'Refreshing and juicy watermelon, perfect for hot days.', price: 250, unit: 'piece', category: 'fruits', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Watermelon', created: '2023-05-05T10:00:00Z', stock: 15 },
+
+            // Cereals
+            { id: 2, name: 'Sweet Corn', description: 'Farm-fresh sweet corn, great for grilling or boiling.', price: 80, unit: 'piece', category: 'cereals', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Corn', created: '2023-01-20T11:30:00Z', stock: 0 },
+            { id: 21, name: 'Maize Flour (2kg)', description: 'Finely ground maize flour for making ugali, a Kenyan staple.', price: 160, unit: 'bag', category: 'cereals', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Maize+Flour', created: '2023-05-10T11:00:00Z', stock: 200 },
+            { id: 22, name: 'Rice (Basmati 1kg)', description: 'Fragrant Basmati rice, ideal for pilau and other rice dishes.', price: 200, unit: 'bag', category: 'cereals', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Rice', created: '2023-05-15T12:00:00Z', stock: 150 },
+            { id: 23, name: 'Wheat Flour (1kg)', description: 'All-purpose wheat flour for baking and chapatis.', price: 100, unit: 'bag', category: 'cereals', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Wheat+Flour', created: '2023-05-20T13:00:00Z', stock: 180 },
+            { id: 24, name: 'Sorghum Grains', description: 'Nutrient-rich sorghum grains, great for porridge or traditional dishes.', price: 90, unit: 'kg', category: 'cereals', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Sorghum', created: '2023-05-25T14:00:00Z', stock: 100 },
+            { id: 25, name: 'Millet Flour', description: 'Healthy millet flour, a gluten-free alternative for baking.', price: 130, unit: 'kg', category: 'cereals', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Millet+Flour', created: '2023-05-30T15:00:00Z', stock: 75 },
+
+            // Dairy & Eggs
+            { id: 4, name: 'Farm Eggs (Dozen)', description: 'Fresh free-range eggs from happy chickens.', price: 220, unit: 'dozen', category: 'dairy_eggs', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Eggs', created: '2023-02-10T14:00:00Z', stock: 20 },
+            { id: 6, name: 'Fresh Milk', description: 'Pasteurized fresh milk, rich in nutrients.', price: 60, unit: 'litre', category: 'dairy_eggs', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Milk', created: '2023-02-20T08:00:00Z', stock: 100 },
+            { id: 26, name: 'Yoghurt (Plain 500ml)', description: 'Creamy plain yoghurt, great for breakfast or snacks.', price: 90, unit: 'bottle', category: 'dairy_eggs', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Yoghurt', created: '2023-06-01T09:00:00Z', stock: 60 },
+            { id: 27, name: 'Cheddar Cheese (250g)', description: 'Sharp and savory cheddar cheese, perfect for sandwiches and cooking.', price: 350, unit: 'pack', category: 'dairy_eggs', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Cheddar+Cheese', created: '2023-06-05T10:00:00Z', stock: 25 },
+            { id: 28, name: 'Fresh Cream (200ml)', description: 'Rich and smooth fresh cream, ideal for sauces and desserts.', price: 180, unit: 'carton', category: 'dairy_eggs', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Cream', created: '2023-06-10T11:00:00Z', stock: 40 },
+
+            // Other
+            { id: 8, name: 'Local Honey', description: 'Pure, raw honey from local beehives. Great natural sweetener.', price: 400, unit: 'jar', category: 'other', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Honey', created: '2023-03-05T13:00:00Z', stock: 15 },
+            { id: 29, name: 'Cooking Oil (1 Litre)', description: 'Refined cooking oil, versatile for all your culinary needs.', price: 280, unit: 'bottle', category: 'other', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Cooking+Oil', created: '2023-06-15T12:00:00Z', stock: 80 },
+            { id: 30, name: 'Sugar (1kg)', description: 'Fine white sugar, essential for sweetening.', price: 150, unit: 'bag', category: 'other', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Sugar', created: '2023-06-20T13:00:00Z', stock: 150 },
+            { id: 31, name: 'Salt (Iodized 500g)', description: 'Iodized table salt, a kitchen essential.', price: 50, unit: 'pack', category: 'other', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Salt', created: '2023-06-25T14:00:00Z', stock: 200 },
+            { id: 32, name: 'Spices (Mixed)', description: 'Assorted fresh spices to elevate your dishes.', price: 170, unit: 'pack', category: 'other', image: 'https://placehold.co/400x300/a7f3d0/065f46?text=Spices', created: '2023-06-30T15:00:00Z', stock: 50 }
+        ];
+
+        const CATEGORY_CHOICES = {
+            fruits: 'Fruits',
+            vegetables: 'Vegetables',
+            cereals: 'Cereals',
+            dairy_eggs: 'Dairy & Eggs',
+            other: 'Other'
+        };
+
+        // State variables (managed directly by JS, no reactive framework)
+        let currentQuery = '';
+        let currentCategory = '';
+        let currentMinPrice = '';
+        let currentMaxPrice = '';
+        let currentSortBy = '-created'; // Default sort
+        let currentIsGrid = true;
+
+        function getCategoryDisplayName(key) {
+            return CATEGORY_CHOICES[key] || key;
         }
-        fetch(`/products/search/?q=${query}`)
-            .then(response => response.json())
-            .then(data => {
-                resultsDiv.innerHTML = "";
-                if (data.results.length > 0) {
-                    data.results.forEach(product => {
-                        let item = document.createElement("div");
-                        item.textContent = `${product.name} - $${product.price}`;
-                        item.addEventListener("click", function() {
-                            searchInput.value = product.name;
-                            resultsDiv.style.display = "none";
-                        });
-                        resultsDiv.appendChild(item);
-                    });
-                    resultsDiv.style.display = "block";
+
+        function renderCategoryChips() {
+            categoryChipsDiv.innerHTML = `
+                <button data-category="" class="px-3 py-1 rounded-full text-sm border ${currentCategory === '' ? 'bg-green-600 text-white border-green-600' : 'text-gray-700 hover:bg-gray-50'}">All</button>
+                ${Object.entries(CATEGORY_CHOICES).map(([key, label]) => `
+                    <button data-category="${key}" class="px-3 py-1 rounded-full text-sm border ${currentCategory === key ? 'bg-green-600 text-white border-green-600' : 'text-gray-700 hover:bg-gray-50'}">${label}</button>
+                `).join('')}
+            `;
+
+            qsa('#categoryChips button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    currentCategory = e.target.dataset.category;
+                    applyFiltersAndSort();
+                });
+            });
+        }
+
+        function renderProducts(products) {
+            skeletons.classList.remove('hidden'); // Show skeletons for a moment
+            productCardsContainer.innerHTML = ''; // Clear existing products
+            emptyStateDiv.classList.add('hidden'); // Hide empty state initially
+
+            setTimeout(() => { // Simulate loading delay
+                skeletons.classList.add('hidden'); // Hide skeletons
+
+                if (products.length === 0) {
+                    emptyStateDiv.classList.remove('hidden');
                 } else {
-                    resultsDiv.style.display = "none";
+                    products.forEach(product => {
+                        const productCardHtml = `
+                            <article class="group bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden">
+                                <a href="#" class="block">
+                                    <div class="relative aspect-[4/3] bg-gray-100">
+                                        <img src="${product.image || 'https://placehold.co/400x300/e0f2f7/26a69a?text=No+Image'}" alt="${product.name}" class="absolute inset-0 h-full w-full object-cover" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/400x300/e0f2f7/26a69a?text=No+Image';"/>
+                                        <div class="absolute left-3 top-3 flex gap-2">
+                                            ${product.category ? `<span class="px-2 py-0.5 text-xs rounded-full bg-white/90 text-gray-800 shadow">${getCategoryDisplayName(product.category)}</span>` : ''}
+                                            ${product.stock <= 0 ? `<span class="px-2 py-0.5 text-xs rounded-full bg-red-600 text-white shadow">Out of stock</span>` : ''}
+                                        </div>
+                                    </div>
+                                </a>
+                                <div class="p-4">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <h3 class="text-lg font-semibold text-gray-800 leading-snug">
+                                            <a href="#" class="group-hover:underline">${product.name}</a>
+                                        </h3>
+                                        <div class="text-right">
+                                            <div class="text-green-700 font-extrabold">Ksh ${product.price}</div>
+                                            ${product.unit ? `<div class="text-xs text-gray-500">per ${product.unit}</div>` : ''}
+                                        </div>
+                                    </div>
+                                    ${product.description ? `<p class="mt-2 text-sm text-gray-600 line-clamp-2">${product.description}</p>` : ''}
+                                    <div class="mt-4 flex items-center justify-between">
+                                        <button type="button" class="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M2.25 3a.75.75 0 000 1.5H5l2.25 10.5a2.25 2.25 0 002.206 1.8h6.838a2.25 2.25 0 002.206-1.8L20.25 7.5H6.606"/></svg>
+                                            <span>Add to Cart</span>
+                                        </button>
+                                        <a href="#" class="text-sm text-gray-600 hover:text-gray-900">Details →</a>
+                                    </div>
+                                </div>
+                            </article>
+                        `;
+                        productCardsContainer.insertAdjacentHTML('beforeend', productCardHtml);
+                    });
+                    emptyStateDiv.classList.add('hidden'); // Ensure hidden if products are found
+                }
+                updateProductCount(products.length);
+            }, 500); // Simulate network delay
+        }
+
+        function updateProductCount(count) {
+            productCountSpan.textContent = count;
+            productCountSuffix.textContent = count === 1 ? '' : 's';
+            if (currentQuery) {
+                queryDisplaySpan.classList.remove('hidden');
+                queryDisplayText.textContent = `“${currentQuery}”`;
+            } else {
+                queryDisplaySpan.classList.add('hidden');
+            }
+            if (currentCategory) {
+                categoryDisplaySpan.classList.remove('hidden');
+                categoryDisplayText.textContent = getCategoryDisplayName(currentCategory);
+            } else {
+                categoryDisplaySpan.classList.add('hidden');
+            }
+        }
+
+        function applyFiltersAndSort() {
+            let filteredProducts = [...DUMMY_PRODUCTS];
+
+            // Apply Search Query
+            if (currentQuery) {
+                filteredProducts = filteredProducts.filter(product =>
+                    product.name.toLowerCase().includes(currentQuery.toLowerCase())
+                );
+            }
+
+            // Apply Category Filter
+            if (currentCategory) {
+                filteredProducts = filteredProducts.filter(product => product.category === currentCategory);
+            }
+
+            // Apply Price Range Filter
+            const min = parseFloat(currentMinPrice);
+            const max = parseFloat(currentMaxPrice);
+            if (!isNaN(min)) {
+                filteredProducts = filteredProducts.filter(product => product.price >= min);
+            }
+            if (!isNaN(max)) {
+                filteredProducts = filteredProducts.filter(product => product.price <= max);
+            }
+
+            // Apply Sorting
+            filteredProducts.sort((a, b) => {
+                switch (currentSortBy) {
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case '-price':
+                        return b.price - a.price;
+                    case 'price':
+                        return a.price - b.price;
+                    case '-created':
+                    default:
+                        // Convert ISO strings to Date objects for comparison
+                        return new Date(b.created) - new Date(a.created);
                 }
             });
+
+            renderProducts(filteredProducts);
+            renderCategoryChips(); // Re-render category chips to update active state
+            updateViewToggleButtons(); // Update grid/list button active state
+        }
+
+        // Search typing handler (debounced)
+        let searchTimeout;
+        const debounce = (fn, delay) => {
+            return (...args) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => fn.apply(this, args), delay);
+            };
+        };
+
+        const handleSearchInput = debounce((value) => {
+            currentQuery = value;
+            applyFiltersAndSort();
+            updateTypeahead(value);
+        }, 250); // Debounce by 250ms
+
+        searchBox.addEventListener('input', (e) => handleSearchInput(e.target.value));
+
+        // Typeahead suggestions (client-side only for this demo)
+        function updateTypeahead(q) {
+            if (!q || q.length < 2) {
+                typeaheadDiv.classList.add('hidden');
+                typeaheadDiv.innerHTML = '';
+                return;
+            }
+
+            const suggestions = DUMMY_PRODUCTS
+                .filter(product => product.name.toLowerCase().includes(q.toLowerCase()))
+                .slice(0, 5); // Limit to 5 suggestions
+
+            if (suggestions.length === 0) {
+                typeaheadDiv.classList.add('hidden');
+                typeaheadDiv.innerHTML = '';
+                return;
+            }
+
+            typeaheadDiv.innerHTML = suggestions.map(it => `
+                <button class="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 w-full text-left" data-name="${it.name}">
+                    <div class="h-6 w-6 rounded bg-gray-100 flex-shrink-0 overflow-hidden">
+                        <img src="${it.image || 'https://placehold.co/400x300/e0f2f7/26a69a?text=Image'}" alt="${it.name}" class="h-full w-full object-cover rounded" />
+                    </div>
+                    <span class="text-sm text-gray-700">${it.name}</span>
+                </button>
+            `).join('');
+            typeaheadDiv.classList.remove('hidden');
+
+            qsa('#typeahead button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const selectedName = e.currentTarget.dataset.name;
+                    searchBox.value = selectedName;
+                    currentQuery = selectedName;
+                    applyFiltersAndSort();
+                    typeaheadDiv.classList.add('hidden');
+                });
+            });
+        }
+
+        // Hide typeahead when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchBox.contains(e.target) && !typeaheadDiv.contains(e.target)) {
+                typeaheadDiv.classList.add('hidden');
+            }
+        });
+
+        // Price filter form submission
+        priceFilterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            currentMinPrice = minPriceInput.value;
+            currentMaxPrice = maxPriceInput.value;
+            applyFiltersAndSort();
+        });
+
+        // Sort select change
+        sortSelect.addEventListener('change', (e) => {
+            currentSortBy = e.target.value;
+            applyFiltersAndSort();
+        });
+
+        // Reset all filters
+        resetFiltersBtn.addEventListener('click', () => {
+            currentQuery = '';
+            currentCategory = '';
+            currentMinPrice = '';
+            currentMaxPrice = '';
+            currentSortBy = '-created';
+
+            searchBox.value = '';
+            minPriceInput.value = '';
+            maxPriceInput.value = '';
+            sortSelect.value = '-created';
+
+            applyFiltersAndSort();
+        });
+
+        emptyStateResetBtn.addEventListener('click', () => {
+            resetFiltersBtn.click(); // Trigger the main reset
+        });
+
+
+        // Grid/List toggle
+        function updateViewToggleButtons() {
+            if (currentIsGrid) {
+                productCardsContainer.classList.remove('grid-cols-1');
+                productCardsContainer.classList.add('sm:grid-cols-2', 'lg:grid-cols-3');
+                gridBtn.classList.add('bg-gray-50');
+                listBtn.classList.remove('bg-gray-50');
+            } else {
+                productCardsContainer.classList.remove('sm:grid-cols-2', 'lg:grid-cols-3');
+                productCardsContainer.classList.add('grid-cols-1');
+                listBtn.classList.add('bg-gray-50');
+                gridBtn.classList.remove('bg-gray-50');
+            }
+        }
+
+        gridBtn.addEventListener('click', () => {
+            currentIsGrid = true;
+            updateViewToggleButtons();
+        });
+        listBtn.addEventListener('click', () => {
+            currentIsGrid = false;
+            updateViewToggleButtons();
+        });
+
+        // Smooth scroll to top (mobile quick action)
+        scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        // Initial render on page load
+        applyFiltersAndSort();
     });
-});
 </script>
+
+</body>
+</html>
