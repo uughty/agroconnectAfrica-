@@ -14,6 +14,9 @@ ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'users.User'
 
 
+
+
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -26,6 +29,7 @@ INSTALLED_APPS = [
     'agroconnect.payments',
     'agroconnect.reviews',
     'agroconnect.users',
+    
     'allauth',
 'allauth.account',
 'allauth.socialaccount',
@@ -126,8 +130,8 @@ LOGIN_REDIRECT_URL = '/api/users/dashboard/'
 
 SITE_ID = 1
 AUTHENTICATION_BACKENDS = [
+    'users.backends.EmailBackend',  # use the backend you just created
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 
@@ -139,3 +143,5 @@ LOGOUT_REDIRECT_URL = "login"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+CART_SESSION_ID = "cart"

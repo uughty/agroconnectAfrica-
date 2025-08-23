@@ -2,6 +2,7 @@
 from django.db import models
 from django.conf import settings
 
+
 class Category(models.TextChoices):
     LIVESTOCK = 'Livestock', 'Livestock'
     CROPS = 'Crops', 'Crops'

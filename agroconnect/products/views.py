@@ -5,9 +5,6 @@ from django.http import Http404, JsonResponse
 from .models import Product, Category
 from .forms import ProductForm
 from .utils import user_is_farmer, product_image_url
-
-# -------------------- Product Views --------------------
-
 def product_list(request):
     category = request.GET.get("category", "").strip()
     q = request.GET.get("q", "").strip()
@@ -21,27 +18,27 @@ def product_list(request):
     if category:
         products = products.filter(category=category)
 
-    # Search filter
     if q:
         products = products.filter(name__icontains=q)
 
-    # Price filter
+
     if min_price:
         products = products.filter(price__gte=min_price)
     if max_price:
         products = products.filter(price__lte=max_price)
 
-    # Sorting
+    
     if sort:
         products = products.order_by(sort)
 
     ctx = {
         "products": products,
-        "Category": Category,
+        "categories": Category.choices,
         "active_category": category,
         "query": q,
     }
     return render(request, "products/product_list.html", ctx)
+
 
 
 def product_detail(request, pk):
@@ -111,7 +108,6 @@ def delete_product(request, pk):
     return render(request, "products/confirm_delete.html", {"product": product})
 
 
-# -------------------- Cart --------------------
 
 CART_KEY = "cart_items"
 
@@ -144,7 +140,7 @@ def cart(request):
     return render(request, "products/cart.html", {"items": items, "total": total})
 
 
-@login_required
+
 def add_to_cart(request, pk):
     if request.method != "POST":
         raise Http404()
@@ -159,7 +155,7 @@ def add_to_cart(request, pk):
     return redirect("product_list")
 
 
-@login_required
+
 def remove_from_cart(request, pk):
     if request.method != "POST":
         raise Http404()
@@ -173,7 +169,6 @@ def remove_from_cart(request, pk):
     return redirect("cart")
 
 
-@login_required
 def clear_cart(request):
     if request.method != "POST":
         raise Http404()
@@ -182,10 +177,28 @@ def clear_cart(request):
     return redirect("cart")
 
 
-# -------------------- Search --------------------
 
 def product_search(request):
     query = request.GET.get("q", "")
     products = Product.objects.filter(name__icontains=query)[:10]
     results = [{"id": p.id, "name": p.name} for p in products]
     return JsonResponse(results, safe=False)
+
+def cart_view(request):
+    cart = request.session.get("cart", {})
+    items = []
+    total = 0
+
+    for product_id, qty in cart.items():
+        from .models import Product
+        product = Product.objects.get(id=product_id)
+        line_total = product.price * qty
+        items.append({
+            "product": product,
+            "qty": qty,
+            "line_total": line_total,
+            "image_url": product.image.url if product.image else "",  # if you have image field
+        })
+        total += line_total
+
+    return render(request, "cart.html", {"items": items, "total": total})

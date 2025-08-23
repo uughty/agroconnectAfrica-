@@ -15,9 +15,10 @@ urlpatterns = [
     path("<int:pk>/delete/", views.delete_product, name="delete_product"),
 
     # Cart
-    path("cart/", views.cart, name="cart"),
-    path("cart/add/<int:pk>/", views.add_to_cart, name="add_to_cart"),
-    path("cart/remove/<int:pk>/", views.remove_from_cart, name="remove_from_cart"),
+      
+     path("cart/", views.cart_view, name="cart"),
+    path("cart/remove/<int:product_id>/", views.remove_from_cart, name="remove_from_cart"),
     path("cart/clear/", views.clear_cart, name="clear_cart"),
-    path("search/", views.product_search, name="product_search"),
+    path("cart/add/<int:product_id>/", views.add_to_cart, name="add_to_cart"),
+     path("list/", views.product_list, name="product_list"),
 ]
