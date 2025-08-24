@@ -5,39 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgroConnect - The Future of Farming</title>
 
-    <!-- Tailwind CSS for styling -->
+   
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Google Fonts: Inter -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Custom styles for the page -->
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Ensure the main content section takes full viewport height and width for the slideshow */
+        
         .main-content-bg {
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            /* Transition for background image changes (though direct image transitions are often not smooth) */
+          
             transition: background-image 1s ease-in-out;
         }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-    <!-- Header and Navigation -->
     <header class="bg-white shadow-md sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <!-- Logo -->
+          
             <a href="#" class="text-2xl font-bold text-green-700 tracking-wide">
                GreenChain
             </a>
-            <!-- Desktop Navigation Links -->
+           
             <div class="hidden md:flex items-center space-x-6">
                 <a href="/admin/" class="text-gray-700 hover:text-green-600 font-medium transition-colors duration-300">Admin</a>
                 <a href="/api/users/" class="text-gray-700 hover:text-green-600 font-medium transition-colors duration-300">Users</a>
@@ -46,7 +45,7 @@
                 <a href="/api/reviews/" class="text-gray-700 hover:text-green-600 font-medium transition-colors duration-300">Reviews</a>
                 <a href="/api/payments/" class="text-gray-700 hover:text-green-600 font-medium transition-colors duration-300">Payments</a>
             </div>
-            <!-- Mobile Menu Button -->
+           
             <button class="md:hidden text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-md p-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
@@ -55,11 +54,10 @@
         </nav>
     </header>
 
-    <!-- Main Content Area - Now the full-page background slideshow -->
     <main class="min-h-screen">
-        <!-- Introduction/Overview Section -->
+        
         <section class="main-content-bg text-white py-16 md:py-24 flex items-center justify-center min-h-screen w-full relative">
-            <!-- Overlay for text readability over changing background images -->
+          
             <div class="absolute inset-0 bg-black opacity-40"></div>
             <div class="container mx-auto px-6 text-center z-10">
                 <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-4">
@@ -72,16 +70,16 @@
         </section>
     </main>
 
-    <!-- Footer -->
+
     <footer class="bg-gray-800 text-white">
         <div class="container mx-auto px-6 pt-12 pb-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- Footer Column 1: About -->
+                
                 <div class="col-span-1 md:col-span-1">
                     <h3 class="text-xl font-bold mb-4 text-green-400">GreenChain</h3>
                     <p class="text-gray-400 leading-relaxed text-sm">Your platform for agricultural resources and community.</p>
                 </div>
-                <!-- Footer Column 2: Quick Links -->
+               
                 <div>
                     <h4 class="font-semibold text-lg mb-4 text-gray-200">Quick Links</h4>
                     <ul class="space-y-2">
@@ -91,7 +89,7 @@
                         <li><a href="#" class="text-gray-400 hover:text-green-400 transition-colors duration-300">Contact</a></li>
                     </ul>
                 </div>
-                <!-- Footer Column 3: Resources -->
+   
                 <div>
                     <h4 class="font-semibold text-lg mb-4 text-gray-200">Resources</h4>
                     <ul class="space-y-2">
@@ -101,12 +99,12 @@
                         <li><a href="#" class="text-gray-400 hover:text-green-400 transition-colors duration-300">Privacy</a></li>
                     </ul>
                 </div>
-                <!-- Footer Column 4: Stay Connected (simplified) -->
+               
                 <div>
                     <h4 class="font-semibold text-lg mb-4 text-gray-200">Connect</h4>
                     <p class="text-gray-400 mb-4 text-sm">Follow us on social media.</p>
                     <div class="flex space-x-4 justify-center md:justify-start">
-                        <!-- Social Media Icons (Twitter, Facebook, LinkedIn) -->
+                        
                         <a href="#" class="text-gray-400 hover:text-green-400 transition-colors duration-300">
                             <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.71v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path></svg>
                         </a>
@@ -122,17 +120,17 @@
             <div class="border-t border-gray-700 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
                 <p class="text-gray-500 text-sm text-center md:text-left">&copy; <span id="current-year-footer"></span> AgroConnect. All Rights Reserved.</p>
                 <div class="flex mt-4 md:mt-0 space-x-4">
-                    <!-- Placeholder for potential additional footer links or logos -->
+                   
                 </div>
             </div>
         </div>
     </footer>
 
     <script>
-        // Set the current year dynamically in the footer
+        
         document.getElementById('current-year-footer').textContent = new Date().getFullYear();
 
-        // JavaScript for the background image slideshow
+   
         const backgroundImages = [
             'static/images/smart.jpg',
             'static/images/farmland.jpg',
@@ -144,23 +142,23 @@
         const mainContentSection = document.querySelector('.main-content-bg');
 
         function changeBackgroundImage() {
-            // Increment index, reset to 0 if beyond array length
+           
             currentImageIndex = (currentImageIndex + 1) % backgroundImages.length;
-            // Apply a linear gradient overlay for text readability
+           
             mainContentSection.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('${backgroundImages[currentImageIndex]}')`;
         }
 
-        // Initialize with the first image when the page loads
+        
         mainContentSection.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('${backgroundImages[currentImageIndex]}')`;
 
-        // Change image every 5 seconds (5000 milliseconds)
+       
         setInterval(changeBackgroundImage, 5000);
 
-        // Optional: Mobile menu toggle (if you plan to implement a mobile menu)
+      
         const mobileMenuButton = document.querySelector('header button');
         mobileMenuButton.addEventListener('click', () => {
             console.log('Mobile menu button clicked!');
-            // Implement mobile menu toggle logic here if needed
+           
         });
     </script>
 </body>

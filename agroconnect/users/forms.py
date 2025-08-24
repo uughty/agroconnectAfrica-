@@ -1,13 +1,14 @@
-# agroconnect/users/forms.py
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User
+from .models import CustomUser
+
 
 # Registration form
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
-        model = User
-        fields = ("email", "password1", "password2")  # ✅ remove 'username'
+        model = CustomUser   # 🔥 use the correct model
+        fields = ("email", "password1", "password2")  # no username
+
 
 # Login form
 class CustomAuthenticationForm(AuthenticationForm):

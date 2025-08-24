@@ -139,7 +139,8 @@
 
         <!-- ✅ CHANGED: point to your custom view -->
        <form method="POST" action="{% url 'login' %}">
-          {% csrf_token %}
+        {% csrf_token %}
+        {{ form.as_p }}
             <label for="username">Username</label>
             <input type="text" id="username" name="username" placeholder="Enter your username" required>
 

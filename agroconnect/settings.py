@@ -9,9 +9,11 @@ SECRET_KEY = 'django-insecure-your-secret-key-here'
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
-AUTH_USER_MODEL = 'users.User'
+
+AUTH_USER_MODEL = "users.CustomUser"
+
 
 
 
@@ -130,9 +132,10 @@ LOGIN_REDIRECT_URL = '/api/users/dashboard/'
 
 SITE_ID = 1
 AUTHENTICATION_BACKENDS = [
-    'users.backends.EmailBackend',  # use the backend you just created
+    'agroconnect.users.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
 
 
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # forces email verify before login
@@ -145,3 +148,5 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 CART_SESSION_ID = "cart"
+
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "http://localhost:8000"]
